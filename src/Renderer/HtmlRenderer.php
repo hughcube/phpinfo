@@ -149,8 +149,9 @@ class HtmlRenderer
         $h = "<table>\n";
 
         if (isset($t['colspan'])) {
-            $cols = isset(self::CREDIT_COLSPAN[$t['colspan']])
-                ? self::CREDIT_COLSPAN[$t['colspan']]
+            $colspanMap = self::CREDIT_COLSPAN;
+            $cols = isset($colspanMap[$t['colspan']])
+                ? $colspanMap[$t['colspan']]
                 : ($t['header'] !== null ? count($t['header']) : 1);
             $h .= sprintf("<tr class=\"h\"><th colspan=\"%d\">%s</th></tr>\n", $cols, $this->esc($t['colspan']));
         }
