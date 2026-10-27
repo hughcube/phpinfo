@@ -14,7 +14,7 @@ class HtmlRenderer
     /**
      * @var array
      */
-    private const STREAM_HASH_KEYS = [
+    const STREAM_HASH_KEYS = [
         'Registered PHP Streams',
         'Registered Stream Socket Transports',
         'Registered Stream Filters',
@@ -23,7 +23,7 @@ class HtmlRenderer
     /**
      * @var array
      */
-    private const CREDIT_COLSPAN = [
+    const CREDIT_COLSPAN = [
         'PHP Authors' => 2,
         'SAPI Modules' => 2,
         'Module Authors' => 2,
@@ -35,7 +35,7 @@ class HtmlRenderer
     /**
      * @var array
      */
-    private const LICENSE = [
+    const LICENSE = [
         'This program is free software; you can redistribute it and/or modify it under the terms of the PHP License as published by the PHP Group and included in the distribution in the file:  LICENSE',
         'This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.',
         'If you did not receive a copy of the PHP license, or have any questions about PHP licensing, please contact license@php.net.',
@@ -58,7 +58,8 @@ class HtmlRenderer
     {
         $phpVersion = PHP_VERSION;
         foreach ($blocks as $b) {
-            if (($b['t'] ?? '') === 'banner') {
+            $t = isset($b['t']) ? $b['t'] : '';
+            if ($t === 'banner') {
                 $phpVersion = $b['version'];
                 break;
             }
@@ -148,7 +149,9 @@ class HtmlRenderer
         $h = "<table>\n";
 
         if (isset($t['colspan'])) {
-            $cols = self::CREDIT_COLSPAN[$t['colspan']] ?? ($t['header'] !== null ? count($t['header']) : 1);
+            $cols = isset(self::CREDIT_COLSPAN[$t['colspan']])
+                ? self::CREDIT_COLSPAN[$t['colspan']]
+                : ($t['header'] !== null ? count($t['header']) : 1);
             $h .= sprintf("<tr class=\"h\"><th colspan=\"%d\">%s</th></tr>\n", $cols, $this->esc($t['colspan']));
         }
 
@@ -160,18 +163,21 @@ class HtmlRenderer
             $h .= "</tr>\n";
         }
 
-        $kind = $t['kind'] ?? 'kv';
+        $kind = isset($t['kind']) ? $t['kind'] : 'kv';
         foreach ($t['rows'] as $row) {
             if ($kind === 'vars') {
+                $v = isset($row[1]) ? $row[1] : '';
                 $h .= "<tr><td class=\"e\">" . $this->gpcseKey((string) $row[0]) . "</td><td class=\"v\">"
-                    . $this->gpcseValue((string) ($row[1] ?? '')) . "</td></tr>\n";
+                    . $this->gpcseValue((string) $v) . "</td></tr>\n";
                 continue;
             }
 
             if ($kind === 'ini') {
+                $v1 = isset($row[1]) ? $row[1] : '';
+                $v2 = isset($row[2]) ? $row[2] : '';
                 $h .= "<tr><td class=\"e\">" . $this->esc($row[0]) . "</td><td class=\"v\">"
-                    . $this->iniCell($row[0], $row[1] ?? '') . "</td><td class=\"v\">"
-                    . $this->iniCell($row[0], $row[2] ?? '') . "</td></tr>\n";
+                    . $this->iniCell($row[0], $v1) . "</td><td class=\"v\">"
+                    . $this->iniCell($row[0], $v2) . "</td></tr>\n";
                 continue;
             }
 
@@ -204,8 +210,9 @@ class HtmlRenderer
                 continue;
             }
 
+            $v = isset($row[1]) ? $row[1] : '';
             $h .= "<tr><td class=\"e\">" . $this->cell($row[0]) . " </td>"
-                . "<td class=\"v\">" . $this->cell($row[1] ?? '') . " </td></tr>\n";
+                . "<td class=\"v\">" . $this->cell($v) . " </td></tr>\n";
         }
 
         $h .= "</table>\n";
