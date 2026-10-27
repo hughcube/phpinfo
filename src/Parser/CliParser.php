@@ -7,7 +7,7 @@ class CliParser
     /**
      * @var array
      */
-    private const SECTIONS = [
+    const SECTIONS = [
         'Configuration',
         'Additional Modules',
         'Environment',
@@ -19,7 +19,7 @@ class CliParser
     /**
      * @var array
      */
-    private const HEADER_KEYS = [
+    const HEADER_KEYS = [
         'FFI support',
         'pcntl support',
         'PDO support',
@@ -289,7 +289,9 @@ class CliParser
         // Extract PHP Version to banner block
         $out = [];
         foreach ($blocks as $b) {
-            if ($phpVersion === null && ($b['t'] ?? '') === 'table' && ($b['rows'][0][0] ?? null) === 'PHP Version') {
+            $type = isset($b['t']) ? $b['t'] : '';
+            $firstCol = isset($b['rows'][0][0]) ? $b['rows'][0][0] : null;
+            if ($phpVersion === null && $type === 'table' && $firstCol === 'PHP Version') {
                 $phpVersion = $b['rows'][0][1];
                 $out[] = ['t' => 'banner', 'version' => $phpVersion];
                 $b['rows'] = array_slice($b['rows'], 1);

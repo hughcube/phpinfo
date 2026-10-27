@@ -9,7 +9,7 @@ class Detector
     /**
      * @var array
      */
-    private const HTML_SAPIS = [
+    const HTML_SAPIS = [
         'fpm-fcgi',
         'apache2handler',
         'apache2filter',
@@ -32,7 +32,7 @@ class Detector
     /**
      * @var array
      */
-    private const TEXT_SAPIS = [
+    const TEXT_SAPIS = [
         'cli',
         'phpdbg',
         'embed',
