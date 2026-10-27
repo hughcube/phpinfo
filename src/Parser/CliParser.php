@@ -288,19 +288,28 @@ class CliParser
 
         // Extract PHP Version to banner block
         $out = [];
+        $hasBanner = false;
         foreach ($blocks as $b) {
             $type = isset($b['t']) ? $b['t'] : '';
             $firstCol = isset($b['rows'][0][0]) ? $b['rows'][0][0] : null;
             if ($phpVersion === null && $type === 'table' && $firstCol === 'PHP Version') {
                 $phpVersion = $b['rows'][0][1];
                 $out[] = ['t' => 'banner', 'version' => $phpVersion];
+                $hasBanner = true;
                 $b['rows'] = array_slice($b['rows'], 1);
                 if ($b['rows'] !== []) {
                     $out[] = $b;
                 }
                 continue;
             }
+            if ($type === 'banner') {
+                $hasBanner = true;
+            }
             $out[] = $b;
+        }
+
+        if (!$hasBanner) {
+            array_unshift($out, ['t' => 'banner', 'version' => PHP_VERSION]);
         }
 
         return $out;

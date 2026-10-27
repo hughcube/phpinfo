@@ -24,7 +24,11 @@ class ThemeRegistry
             return self::$themes[$version];
         }
 
-        // Resolve by version comparison
+        // Higher than or equal to 8.5 -> fallback to 8.5
+        if (version_compare($version, '8.5', '>=')) {
+            return self::getOrCreate('8.5', Php85Theme::class);
+        }
+
         if (version_compare($version, '8.4', '>=')) {
             return self::getOrCreate('8.4', Php84Theme::class);
         }
@@ -41,11 +45,8 @@ class ThemeRegistry
             return self::getOrCreate('7.0', Php70Theme::class);
         }
 
-        if (version_compare($version, '5.5', '>=')) {
-            return self::getOrCreate('5.6', Php56Theme::class);
-        }
-
-        return self::getOrCreate('5.3', Php53Theme::class);
+        // Lower than 5.6 -> fallback to 5.6 as specified
+        return self::getOrCreate('5.6', Php56Theme::class);
     }
 
     /**
