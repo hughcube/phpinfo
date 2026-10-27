@@ -4,12 +4,12 @@ namespace Hughcube\PhpInfo\Tests;
 
 use Hughcube\PhpInfo\Detector;
 use Hughcube\PhpInfo\PhpInfo;
-use Hughcube\PhpInfo\Themes\Php53Theme;
 use Hughcube\PhpInfo\Themes\Php56Theme;
 use Hughcube\PhpInfo\Themes\Php70Theme;
 use Hughcube\PhpInfo\Themes\Php74Theme;
 use Hughcube\PhpInfo\Themes\Php82Theme;
 use Hughcube\PhpInfo\Themes\Php84Theme;
+use Hughcube\PhpInfo\Themes\Php85Theme;
 use Hughcube\PhpInfo\Themes\ThemeRegistry;
 
 class PhpInfoTest extends TestCase
@@ -42,6 +42,10 @@ class PhpInfoTest extends TestCase
         $this->assertStrContains('PHP logo', $html);
         $this->assertStrContains('Zend logo', $html);
         $this->assertStrContains('</table>', $html);
+
+        // Ensure real runtime values are present
+        $this->assertStrContains(PHP_VERSION, $html);
+        $this->assertStrContains(php_uname('s'), $html);
     }
 
     public function testForceRenderFragmentOnly()
@@ -55,13 +59,22 @@ class PhpInfoTest extends TestCase
 
     public function testThemeResolution()
     {
-        $this->assertInstanceOf(Php53Theme::class, ThemeRegistry::resolve('5.3.0'));
+        // Lower than 5.6 fallbacks to 5.6
+        $this->assertInstanceOf(Php56Theme::class, ThemeRegistry::resolve('5.0.0'));
+        $this->assertInstanceOf(Php56Theme::class, ThemeRegistry::resolve('5.3.0'));
+        $this->assertInstanceOf(Php56Theme::class, ThemeRegistry::resolve('5.5.9'));
         $this->assertInstanceOf(Php56Theme::class, ThemeRegistry::resolve('5.6.40'));
+
+        $this->assertInstanceOf(Php70Theme::class, ThemeRegistry::resolve('7.0.0'));
         $this->assertInstanceOf(Php70Theme::class, ThemeRegistry::resolve('7.1.0'));
         $this->assertInstanceOf(Php74Theme::class, ThemeRegistry::resolve('7.4.33'));
         $this->assertInstanceOf(Php82Theme::class, ThemeRegistry::resolve('8.2.0'));
         $this->assertInstanceOf(Php84Theme::class, ThemeRegistry::resolve('8.4.1'));
-        $this->assertInstanceOf(Php84Theme::class, ThemeRegistry::resolve('8.5.0'));
+
+        // 8.5 and higher fallback to 8.5
+        $this->assertInstanceOf(Php85Theme::class, ThemeRegistry::resolve('8.5.0'));
+        $this->assertInstanceOf(Php85Theme::class, ThemeRegistry::resolve('8.6.0'));
+        $this->assertInstanceOf(Php85Theme::class, ThemeRegistry::resolve('9.0.0'));
     }
 
     public function testCustomVersionRender()
