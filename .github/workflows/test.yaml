@@ -1,0 +1,65 @@
+name: Test
+
+on: [ push, pull_request ]
+
+jobs:
+  run-linux:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    strategy:
+      max-parallel: 15
+      matrix:
+        php: [ '5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4', '8.5' ]
+    name: PHP ${{ matrix.php }} Test on ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer
+          ini-values: error_reporting=22527
+
+      - name: Start Web Server (Native HTTP server for phpinfo verification)
+        run: |
+          set -e
+          sudo mkdir -p /var/www/html
+          echo '<?php phpinfo();' | sudo tee /var/www/html/info.php
+
+          # Try starting FPM if available for this PHP version
+          sudo apt-get update -qq || true
+          if sudo apt-get install -y php${{ matrix.php }}-fpm 2>/dev/null; then
+            sudo systemctl start php${{ matrix.php }}-fpm 2>/dev/null || true
+          fi
+
+          # Launch native web server serving /var/www/html
+          php -S 127.0.0.1:8080 -t /var/www/html > /dev/null 2>&1 &
+
+          for i in $(seq 1 15); do
+            if curl -s http://127.0.0.1:8080/info.php | grep -qi "phpinfo"; then
+              echo "Native HTTP server is ready on http://127.0.0.1:8080/info.php"
+              break
+            fi
+            sleep 1
+          done
+
+      - name: System Setting
+        run: |
+          php -v
+          composer -V
+          php -m
+
+      - name: Validate composer.json
+        run: composer validate --no-check-publish
+
+      - name: Install dependencies
+        run: |
+          composer update --prefer-stable --prefer-dist --no-interaction --no-progress
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit -c phpunit.xml.dist --testdox
+        env:
+          TEST_NATIVE_HTTP_URL: http://127.0.0.1:8080/info.php

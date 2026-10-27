@@ -1,0 +1,10 @@
+.idea
+*.DS_Store
+/vendor
+/coverage
+composer.lock
+.phpunit.result.cache
+/.phpunit.cache/
+phpunit.xml
+/tests/.temp/
+build/
